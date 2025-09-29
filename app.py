@@ -3,13 +3,13 @@ import threading
 
 app = Flask(__name__)
 
-# Dicionário para armazenar as escolhas dos jogadores
+
 jogadas = {
     'jogador1': None,
     'jogador2': None
 }
 
-lock = threading.Lock()  # Para evitar condições de corrida
+lock = threading.Lock()  
 
 def analisar_vitoria(j1, j2):
     if j1 == j2:
