@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resultado</title>
+</head>
+<body>
+    <h1>Resultado: {{ resultado }}</h1>
+
+    <p>Sua escolha: {{ sua_escolha }}</p>
+    <p>Escolha do adversário: {{ escolha_adversario }}</p>
+
+    <a href="{{ url_for('reset') }}">Jogar novamente</a>
+</body>
+</html>

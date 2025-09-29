@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedra Papel Tesoura</title>
+</head>
+<body>
+    <h1>Pedra, Papel ou Tesoura?</h1>
+
+    {% if erro %}
+    <p style="color: red;">{{ erro }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <div>
+            <h2>Jogador 1, escolha:</h2>
+            <button type="submit" name="jogador1" value="pedra">
+                <img src="{{ url_for('static', filename='images/pedra.png') }}" alt="Pedra" width="50">
+            </button>
+            <button type="submit" name="jogador1" value="papel">
+                <img src="{{ url_for('static', filename='images/papel.png') }}" alt="Papel" width="50">
+            </button>
+            <button type="submit" name="jogador1" value="tesoura">
+                <img src="{{ url_for('static', filename='images/tesoura.png') }}" alt="Tesoura" width="50">
+            </button>
+        </div>
+
+        <div>
+            <h2>Jogador 2, escolha:</h2>
+            <button type="submit" name="jogador2" value="pedra">
+                <img src="{{ url_for('static', filename='images/pedra.png') }}" alt="Pedra" width="50">
+            </button>
+            <button type="submit" name="jogador2" value="papel">
+                <img src="{{ url_for('static', filename='images/papel.png') }}" alt="Papel" width="50">
+            </button>
+            <button type="submit" name="jogador2" value="tesoura">
+                <img src="{{ url_for('static', filename='images/tesoura.png') }}" alt="Tesoura" width="50">
+            </button>
+        </div>
+    </form>
+</body>
+</html>

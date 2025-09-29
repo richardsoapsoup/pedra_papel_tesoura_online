@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Escolha - {{ jogador }}</title>
+</head>
+<body>
+    <h1>{{ jogador|capitalize }}, escolha sua jogada:</h1>
+    <form method="POST">
+        <button type="submit" name="escolha" value="pedra">🪨 Pedra</button>
+        <button type="submit" name="escolha" value="papel">📄 Papel</button>
+        <button type="submit" name="escolha" value="tesoura">✂️ Tesoura</button>
+    </form>
+</body>
+</html>
