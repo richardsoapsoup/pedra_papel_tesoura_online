@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedra Papel Tesoura | Sala: {{ code }}</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh; margin: 0; text-align: center; }
+        .container { background-color: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); width: 90%; max-width: 600px; }
+        h1 { color: #2c3e50; margin-bottom: 10px; font-size: 2.5em; }
+        h2.room-code { color: #f39c12; margin-bottom: 30px; font-size: 1.5em; border-bottom: 2px solid #f39c12; padding-bottom: 10px; }
+        h3#player-role { color: #3498db; margin-bottom: 25px; font-size: 1.8em; }
+        .botoes-escolha button { background-color: #3498db; color: white; border: none; padding: 15px 25px; margin: 10px; border-radius: 8px; cursor: pointer; font-size: 1.2em; transition: background-color 0.3s ease, transform 0.1s ease; box-shadow: 0 4px #2980b9; }
+        .botoes-escolha button:hover { background-color: #2980b9; }
+        .botoes-escolha button:disabled { background-color: #bdc3c7; box-shadow: 0 4px #95a5a6; cursor: not-allowed; }
+        .botoes-escolha button:active { background-color: #2471a3; box-shadow: 0 2px #1f618d; transform: translateY(2px); }
+        #resultado { margin-top: 30px; padding: 20px; border: 2px solid #bdc3c7; border-radius: 8px; min-height: 80px; font-size: 1.2em; white-space: pre-line; background-color: #ecf0f1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pedra Papel Tesoura Online</h1>
+        <h2 class="room-code">Sala: {{ code }}</h2>
+        <h3 id="player-role">Conectando...</h3>
+
+        <div class="botoes-escolha">
+            <button onclick="enviarEscolha('pedra')" disabled>✊ Pedra</button>
+            <button onclick="enviarEscolha('papel')" disabled>✋ Papel</button>
+            <button onclick="enviarEscolha('tesoura')" disabled>✌️ Tesoura</button>
+        </div>
+
+        <h2 id="resultado">Aguardando o segundo jogador se conectar...</h2>
+    </div>
+
+    <script>
+        const socket = io();
+        const ROOM_CODE = '{{ code }}';
+        let JOGADOR_ID = null; 
+
+        
+        const statusDisplay = document.getElementById('resultado');
+        const roleDisplay = document.getElementById('player-role');
+        const buttons = document.querySelectorAll('.botoes-escolha button');
+
+        
+        function toggleButtons(enable) {
+            buttons.forEach(button => {
+                button.disabled = !enable;
+            });
+        }
+
+        
+        socket.on('connect', function() {
+            socket.emit('join_room_request', { code: ROOM_CODE });
+            statusDisplay.innerText = 'Conectado. Aguardando atribuição de papel...';
+        });
+
+        socket.on('room_joined', function(data) {
+            JOGADOR_ID = data.role;
+            const displayRole = JOGADOR_ID.replace('jogador', 'Jogador ');
+            roleDisplay.innerText = `Você é: ${displayRole}`;
+            
+           
+            if (JOGADOR_ID === 'jogador1') {
+                statusDisplay.innerHTML = '<strong>Você é o Jogador 1.</strong> <br> Compartilhe o link acima para um amigo entrar como Jogador 2!';
+            }
+        });
+
+       
+        socket.on('start_game', function(data) {
+            statusDisplay.innerHTML = '<strong>JOGO INICIADO!</strong> <br> Faça sua jogada.';
+            toggleButtons(true);
+        });
+
+        
+        socket.on('resultado', function(data) {
+            let corResultado;
+            if (data.resultado.includes(JOGADOR_ID.replace('jogador', 'Jogador'))) {
+                corResultado = '#27ae60'; 
+            } else if (data.resultado.includes('Empate')) {
+                corResultado = '#f39c12'; 
+            } else {
+                corResultado = '#c0392b'; 
+            }
+            
+            statusDisplay.innerHTML =
+                `<strong>Rodada Finalizada!</strong> <br><br>
+                 J1: ${data.jogador1} | J2: ${data.jogador2} <br><br>
+                 <span style="font-size: 1.4em; color: ${corResultado}; font-weight: bold;">
+                    ${data.resultado}
+                 </span> <br><br>
+                 Faça sua próxima jogada.`;
+            
+            toggleButtons(true); 
+        });
+
+        
+        socket.on('play_registered', function(data) {
+            if (data.jogador === JOGADOR_ID) {
+                statusDisplay.innerText = `Sua jogada foi registrada. Aguardando o outro jogador...`;
+                toggleButtons(false); 
+            } else {
+                statusDisplay.innerText = `O outro jogador jogou! Aguardando o resultado...`;
+            }
+        });
+
+        
+        socket.on('error', function(data) {
+            statusDisplay.innerText = `ERRO: ${data.message} Redirecionando...`;
+            toggleButtons(false);
+            setTimeout(() => { window.location.href = '/'; }, 3000);
+        });
+
+        socket.on('player_left', function(data) {
+            statusDisplay.innerText = `AVISO: ${data.message} Retorne para a tela inicial para criar um novo lobby.`;
+            toggleButtons(false);
+            setTimeout(() => { window.location.href = '/'; }, 5000);
+        });
+
+        
+        function enviarEscolha(escolha) {
+            if (!JOGADOR_ID) {
+                alert('Aguarde a atribuição de papel pelo servidor.');
+                return;
+            }
+           
+            socket.emit('escolha', { code: ROOM_CODE, jogador: JOGADOR_ID, escolha });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Criar / Entrar no Lobby</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background-color: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); width: 90%; max-width: 400px; text-align: center; }
+        h1 { color: #2c3e50; margin-bottom: 30px; font-size: 2em; }
+        form { margin-bottom: 20px; }
+        input[type="text"], button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; }
+        button { background-color: #2ecc71; color: white; border: none; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #27ae60; }
+        .error { color: #e74c3c; font-weight: bold; margin-bottom: 15px; }
+        .divider { border-top: 1px solid #eee; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pedra Papel Tesoura - Lobby</h1>
+        
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <h2>Criar Novo Jogo</h2>
+        <form method="POST" action="/create">
+            <button type="submit">CRIAR LOBBY (Eu serei o Jogador 1)</button>
+        </form>
+
+        <div class="divider"></div>
+
+        <h2>Entrar em Jogo Existente</h2>
+        <form method="POST" action="/join">
+            <input type="text" name="code" placeholder="Insira o código do lobby (ex: ABCD)" maxlength="4" required>
+            <button type="submit" style="background-color: #3498db;">ENTRAR NO LOBBY (Eu serei o Jogador 2)</button>
+        </form>
+    </div>
+</body>
+</html>
