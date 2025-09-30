@@ -1,43 +1,37 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedra Papel Tesoura</title>
+  <title>Jogo em tempo real</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
-    <h1>Pedra, Papel ou Tesoura?</h1>
+  <h1>Pedra Papel Tesoura</h1>
 
-    {% if erro %}
-    <p style="color: red;">{{ erro }}</p>
-    {% endif %}
+  <label for="jogador">Jogador:</label>
+  <select id="jogador">
+    <option value="jogador1">Jogador 1</option>
+    <option value="jogador2">Jogador 2</option>
+  </select>
 
-    <form method="POST">
-        <div>
-            <h2>Jogador 1, escolha:</h2>
-            <button type="submit" name="jogador1" value="pedra">
-                <img src="{{ url_for('static', filename='images/pedra.png') }}" alt="Pedra" width="50">
-            </button>
-            <button type="submit" name="jogador1" value="papel">
-                <img src="{{ url_for('static', filename='images/papel.png') }}" alt="Papel" width="50">
-            </button>
-            <button type="submit" name="jogador1" value="tesoura">
-                <img src="{{ url_for('static', filename='images/tesoura.png') }}" alt="Tesoura" width="50">
-            </button>
-        </div>
+  <br><br>
+  <button onclick="enviarEscolha('pedra')">Pedra</button>
+  <button onclick="enviarEscolha('papel')">Papel</button>
+  <button onclick="enviarEscolha('tesoura')">Tesoura</button>
 
-        <div>
-            <h2>Jogador 2, escolha:</h2>
-            <button type="submit" name="jogador2" value="pedra">
-                <img src="{{ url_for('static', filename='images/pedra.png') }}" alt="Pedra" width="50">
-            </button>
-            <button type="submit" name="jogador2" value="papel">
-                <img src="{{ url_for('static', filename='images/papel.png') }}" alt="Papel" width="50">
-            </button>
-            <button type="submit" name="jogador2" value="tesoura">
-                <img src="{{ url_for('static', filename='images/tesoura.png') }}" alt="Tesoura" width="50">
-            </button>
-        </div>
-    </form>
+  <h2 id="resultado"></h2>
+
+  <script>
+    const socket = io();
+
+    function enviarEscolha(escolha) {
+      const jogador = document.getElementById("jogador").value;
+      socket.emit('escolha', { jogador, escolha });
+    }
+
+    socket.on('resultado', function(data) {
+      document.getElementById("resultado").innerText =
+        `Jogador 1 escolheu: ${data.jogador1} | Jogador 2 escolheu: ${data.jogador2}\nResultado: ${data.resultado}`;
+    });
+  </script>
 </body>
 </html>
