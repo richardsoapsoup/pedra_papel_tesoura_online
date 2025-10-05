@@ -5,18 +5,171 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedra Papel Tesoura | Sala: {{ code }}</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+   
+    <script src="https://www.youtube.com/iframe_api"></script> 
+    
     <style>
         
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh; margin: 0; text-align: center; }
-        .container { background-color: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); width: 90%; max-width: 600px; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f7f6; 
+            color: #333; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            min-height: 100vh; 
+            margin: 0; 
+            text-align: center; 
+        }
+        .container { 
+            background-color: #fff; 
+            padding: 40px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+            width: 90%; 
+            max-width: 600px; 
+        }
         h1 { color: #2c3e50; margin-bottom: 10px; font-size: 2.5em; }
-        h2.room-code { color: #f39c12; margin-bottom: 30px; font-size: 1.5em; border-bottom: 2px solid #f39c12; padding-bottom: 10px; }
-        h3#player-role { color: #3498db; margin-bottom: 25px; font-size: 1.8em; }
-        .botoes-escolha button { background-color: #3498db; color: white; border: none; padding: 15px 25px; margin: 10px; border-radius: 8px; cursor: pointer; font-size: 1.2em; transition: background-color 0.3s ease, transform 0.1s ease; box-shadow: 0 4px #2980b9; }
+        h2.room-code { color: #f39c12; margin-bottom: 15px; font-size: 1.5em; border-bottom: 2px solid #f39c12; padding-bottom: 10px; }
+        h3#player-role { color: #3498db; margin-bottom: 10px; font-size: 1.8em; }
+        #opponent-name { margin-bottom: 10px; color: #7f8c8d; font-style: italic; font-size: 1.1em;} 
+        
+        
+        #stats-display {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #f7f7f7;
+        }
+        #stats-display > div {
+            margin-bottom: 8px;
+        }
+        #stats-display strong {
+            font-size: 1.2em;
+        }
+
+        .botoes-escolha button { 
+            background-color: #3498db; 
+            color: white; 
+            border: none; 
+            padding: 15px 25px; 
+            margin: 10px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 1.2em; 
+            transition: background-color 0.3s ease, transform 0.1s ease; 
+            box-shadow: 0 4px #2980b9; 
+        }
         .botoes-escolha button:hover { background-color: #2980b9; }
         .botoes-escolha button:disabled { background-color: #bdc3c7; box-shadow: 0 4px #95a5a6; cursor: not-allowed; }
         .botoes-escolha button:active { background-color: #2471a3; box-shadow: 0 2px #1f618d; transform: translateY(2px); }
         #resultado { margin-top: 30px; padding: 20px; border: 2px solid #bdc3c7; border-radius: 8px; min-height: 80px; font-size: 1.2em; white-space: pre-line; background-color: #ecf0f1; }
+
+        
+        #sair-button {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #e74c3c; 
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        #sair-button:hover {
+            background-color: #c0392b;
+        }
+        
+        
+        .window {
+            position: fixed;
+            bottom: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000; 
+            display: flex;
+            flex-direction: column;
+            resize: both; 
+            overflow: hidden; 
+            min-height: 40px;
+        }
+
+        .header {
+            color: white;
+            padding: 8px 10px;
+            border-radius: 8px 8px 0 0;
+            cursor: move; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        .header h4 { margin: 0; }
+        .minimize-btn {
+            background: none; border: none; color: white;
+            font-size: 1.2em; cursor: pointer; padding: 0 5px;
+        }
+        .body {
+            padding: 10px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .minimized {
+            height: 40px !important;
+            max-height: 40px !important;
+            overflow: hidden !important;
+            resize: none !important;
+        }
+        
+       
+        #chat-window {
+            right: 20px;
+            width: 300px; 
+            height: 300px;
+            min-width: 250px;
+        }
+        #chat-header { background-color: #3498db; }
+        #messages {
+            height: 100%; overflow-y: auto; border: 1px solid #eee;
+            padding: 5px; margin-bottom: 10px; background-color: #f9f9f9; flex-grow: 1;
+        }
+        #messages p { margin: 3px 0; line-height: 1.3; word-wrap: break-word; }
+        .chat-input { display: flex; flex-shrink: 0; }
+        .chat-input input {
+            flex-grow: 1; padding: 8px; border-radius: 6px 0 0 6px;
+            border: 1px solid #ccc; margin: 0;
+        }
+        .chat-input button {
+            width: auto; padding: 8px 12px; margin: 0; border-radius: 0 6px 6px 0;
+            background-color: #3498db; box-shadow: none;
+        }
+
+       
+        #media-window {
+            left: 20px; 
+            width: 350px; 
+            height: 450px; 
+            min-width: 300px;
+        }
+        #media-header { background-color: #2c3e50; }
+        #player { background: #333; display: flex; align-items: center; justify-content: center; color: white; height: 200px; }
+        #video-queue-controls { padding: 10px 0; flex-shrink: 0; }
+        #video-queue-controls h5 { margin: 5px 0; font-size: 1.1em; }
+        #add-video-form input { border-color: #f39c12 !important; padding: 6px; }
+        #add-video-form button { background-color: #f39c12; padding: 6px 10px; font-size: 1.1em; }
+        #video-queue ul { list-style-type: none; padding: 0; margin: 5px 0 0 0;}
+        #video-queue li { margin-bottom: 4px; border-bottom: 1px dotted #eee; padding-bottom: 3px; text-align: left; }
+
     </style>
 </head>
 <body>
@@ -24,7 +177,28 @@
         <h1>Pedra Papel Tesoura Online</h1>
         <h2 class="room-code">Sala: {{ code }}</h2>
         <h3 id="player-role">Conectando...</h3>
+        <p id="opponent-name">Oponente: Aguardando...</p>
 
+        
+        <div id="stats-display" style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
+            <p style="font-weight: bold; color: #3498db;">SUAS ESTATÍSTICAS:</p>
+            <div style="display: flex; justify-content: space-around;">
+                <span>Vitórias: <strong id="my-wins">0</strong></span>
+                <span>Derrotas: <strong id="my-losses">0</strong></span>
+                <span>Win Rate: <strong id="my-winrate">0%</strong></span>
+            </div>
+            
+            <p style="font-weight: bold; color: #c0392b; margin-top: 10px;">ESTATÍSTICAS DO OPONENTE:</p>
+            <div style="display: flex; justify-content: space-around;">
+                <span>Vitórias: <strong id="opponent-wins">0</strong></span>
+                <span>Derrotas: <strong id="opponent-losses">0</strong></span>
+                <span>Win Rate: <strong id="opponent-winrate">0%</strong></span>
+            </div>
+        </div>
+       
+
+
+       
         <div class="botoes-escolha">
             <button onclick="enviarEscolha('pedra')" disabled>✊ Pedra</button>
             <button onclick="enviarEscolha('papel')" disabled>✋ Papel</button>
@@ -33,99 +207,523 @@
 
         <h2 id="resultado">Aguardando o segundo jogador se conectar...</h2>
     </div>
+    
+    
+    <button id="sair-button" onclick="sairDoJogo()">
+        SAIR DO JOGO E VOLTAR AO LOBBY
+    </button> 
+    
+    
+    <div id="media-window" class="window">
+        <div id="media-header" class="header">
+            <h4>YouTube Compartilhado</h4>
+            <button id="minimize-media-btn" class="minimize-btn" onclick="toggleMedia()">—</button> 
+        </div>
+        <div id="media-body" class="body">
+            
+            
+            <div id="youtube-player" style="width: 100%;">
+                <div id="player">
+                    Aguardando vídeo...
+                </div>
+            </div>
+
+            
+            <div id="video-queue-controls">
+                <h5>Adicionar Vídeo</h5>
+                <form id="add-video-form">
+                    <input type="text" id="video-url-input" placeholder="Link do YouTube (URL)" required>
+                    <button type="submit">+</button>
+                </form>
+                
+                <div id="video-queue" style="margin-top: 10px;">
+                    <strong>Fila:</strong>
+                    <ul id="queue-list">
+                        <li style="color: #7f8c8d; border-bottom: none;">Nenhum vídeo na fila.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div id="chat-window" class="window">
+        <div id="chat-header" class="header">
+            <h4>Chat da Sala</h4>
+            <button id="minimize-btn" class="minimize-btn" onclick="toggleChat()">—</button>
+        </div>
+        <div id="chat-body" class="body">
+            <div id="messages">
+               
+            </div>
+            <form class="chat-input" id="message-form">
+                <input type="text" id="message-input" placeholder="Digite sua mensagem..." maxlength="100" autocomplete="off" required>
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         const socket = io();
         const ROOM_CODE = '{{ code }}';
+        const SEU_NOME = '{{ nome }}'; 
         let JOGADOR_ID = null; 
-
+        let NOME_OPONENTE = 'Aguardando...'; 
         
+    
+        let isSyncing = false; 
+        let initialVideoCommand = null; 
+        
+    
         const statusDisplay = document.getElementById('resultado');
-        const roleDisplay = document.getElementById('player-role');
+        const opponentDisplay = document.getElementById('opponent-name'); 
         const buttons = document.querySelectorAll('.botoes-escolha button');
-
         
+      
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const messagesDiv = document.getElementById('messages');
+        const chatWindow = document.getElementById('chat-window');
+        const chatHeader = document.getElementById('chat-header');
+        const chatBody = document.getElementById('chat-body');
+        const minimizeBtn = document.getElementById('minimize-btn');
+        
+        
+        let player;
+        const videoUrlInput = document.getElementById('video-url-input');
+        const addVideoForm = document.getElementById('add-video-form');
+        const queueList = document.getElementById('queue-list');
+        
+      
+        const mediaWindow = document.getElementById('media-window');
+        const mediaHeader = document.getElementById('media-header');
+        const mediaBody = document.getElementById('media-body');
+        const minimizeMediaBtn = document.getElementById('minimize-media-btn');
+
+
         function toggleButtons(enable) {
             buttons.forEach(button => {
                 button.disabled = !enable;
             });
         }
+        
+
+        function makeDraggable(windowElement, headerElement, minimizeElement) {
+            let isDragging = false;
+            let offset = { x: 0, y: 0 };
+
+            headerElement.addEventListener('mousedown', (e) => {
+                if (windowElement.classList.contains('minimized')) return;
+                isDragging = true;
+                offset.x = e.clientX - windowElement.getBoundingClientRect().left;
+                offset.y = e.clientY - windowElement.getBoundingClientRect().top;
+                windowElement.style.cursor = 'grabbing';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                let newX = e.clientX - offset.x;
+                let newY = e.clientY - offset.y;
+                
+                windowElement.style.bottom = 'auto';
+                if (windowElement.id === 'chat-window') {
+                     windowElement.style.right = 'auto';
+                } else if (windowElement.id === 'media-window') {
+                     windowElement.style.left = 'auto';
+                }
+                
+                windowElement.style.left = newX + 'px';
+                windowElement.style.top = newY + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                windowElement.style.cursor = 'move';
+            });
+        }
+        
+        makeDraggable(chatWindow, chatHeader, minimizeBtn);
+        makeDraggable(mediaWindow, mediaHeader, minimizeMediaBtn);
+
+        function toggleChat() {
+            const isMinimized = chatWindow.classList.toggle('minimized');
+            chatBody.style.display = isMinimized ? 'none' : 'flex';
+            minimizeBtn.textContent = isMinimized ? '□' : '—'; 
+            chatWindow.style.resize = isMinimized ? 'none' : 'both';
+        }
+
+        function toggleMedia() {
+            const isMinimized = mediaWindow.classList.toggle('minimized');
+            mediaBody.style.display = isMinimized ? 'none' : 'flex';
+            minimizeMediaBtn.textContent = isMinimized ? '□' : '—'; 
+            mediaWindow.style.resize = isMinimized ? 'none' : 'both';
+            
+            if (!isMinimized && player && player.playVideo) {
+                 player.playVideo();
+            }
+        }
+
 
         
+
+        function onYouTubeIframeAPIReady() {
+            const currentOrigin = window.location.origin; 
+            
+            player = new YT.Player('player', {
+                height: '200',
+                width: '100%',
+                playerVars: {
+                    'playsinline': 1,
+                    'autoplay': 1, 
+                    'controls': 1,
+                    'origin': currentOrigin
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange,
+                    'onError': onPlayerError
+                },
+                host: 'https://www.youtube.com'
+            });
+        }
+        
+        function onPlayerReady(event) {
+            console.log("Player do YouTube pronto.");
+            
+            if (initialVideoCommand) {
+                const videoId = initialVideoCommand.youtube_id;
+                const startTime = initialVideoCommand.start_time || 0;
+                
+                executePlayback(videoId, startTime);
+                
+                initialVideoCommand = null; 
+            }
+        }
+        
+        function onPlayerStateChange(event) {
+            if (isSyncing) {
+                isSyncing = false;
+                return;
+            }
+
+            if (event.data === YT.PlayerState.ENDED) {
+                console.log("Vídeo terminou. Notificando servidor para tocar o próximo.");
+                socket.emit('video_ended', { code: ROOM_CODE });
+                return;
+            }
+
+            
+            let state = null;
+            if (event.data === YT.PlayerState.PLAYING) {
+                state = 'play';
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                state = 'pause';
+            }
+            
+            if (state) {
+                const currentTime = player.getCurrentTime();
+                socket.emit('sync_play_pause', {
+                    code: ROOM_CODE, 
+                    state: state, 
+                    time: currentTime
+                });
+            }
+        }
+        
+        function onPlayerError(event) {
+            const errorCode = event.data;
+            let errorMessage = `Erro desconhecido (${errorCode}).`;
+            
+            if (errorCode === 150 || errorCode === 100) {
+                errorMessage = `O vídeo não pode ser incorporado (restrição do YouTube).`;
+            } else if (errorCode === 2) {
+                errorMessage = `URL ou ID do vídeo inválido.`;
+            }
+
+            console.error(`Erro de reprodução detectado (Código: ${errorCode}). ${errorMessage}`);
+            
+            
+            socket.emit('send_message', { 
+                code: ROOM_CODE, 
+                jogador: 'Sistema', 
+                message: `[ALERTA VÍDEO] ${errorMessage} Pulando para o próximo...` 
+            });
+
+            document.getElementById('player').innerHTML = 
+                `<div style="color:white; padding: 20px;">
+                    ERRO: ${errorMessage}<br>Pulando para o próximo...
+                </div>`; 
+
+            
+            socket.emit('video_error', { code: ROOM_CODE });
+        }
+        
+        function executePlayback(videoId, startTime = 0) {
+            const currentOrigin = window.location.origin;
+
+            if (player && player.loadVideoById) {
+                player.loadVideoById(videoId, startTime); 
+            } else {
+                 const playerContainer = document.getElementById('player');
+                 playerContainer.innerHTML = '';
+                 
+                 player = new YT.Player('player', {
+                    height: '200',
+                    width: '100%',
+                    videoId: videoId, 
+                    playerVars: {
+                        'playsinline': 1,
+                        'autoplay': 1, 
+                        'controls': 1,
+                        'start': startTime,
+                        'origin': currentOrigin
+                    },
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange,
+                        'onError': onPlayerError
+                    },
+                    host: 'https://www.youtube.com'
+                });
+            }
+        }
+
+
+        function getYouTubeId(url) {
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|\/(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(regex);
+            return (match && match[1]) ? match[1] : null;
+        }
+
+        addVideoForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const url = videoUrlInput.value.trim();
+            const videoId = getYouTubeId(url);
+            
+            if (videoId && JOGADOR_ID) {
+                const title = `Vídeo ${videoId.substring(0, 4)}...`; 
+                
+                socket.emit('add_to_queue', { 
+                    code: ROOM_CODE, 
+                    youtube_id: videoId, 
+                    title: title,
+                    jogador: JOGADOR_ID
+                });
+                videoUrlInput.value = '';
+            } else {
+                
+                statusDisplay.innerHTML = '<span style="color:#c0392b;">URL do YouTube inválida ou player não pronto.</span>';
+            }
+        });
+
+        function updateQueueDisplay(queue) {
+            queueList.innerHTML = '';
+            if (queue.length === 0) {
+                queueList.innerHTML = '<li style="color: #7f8c8d; border-bottom: none;">Nenhum vídeo na fila.</li>';
+                document.getElementById('player').innerHTML = 'Aguardando vídeo...'; 
+                return;
+            }
+            
+            queue.forEach((video, index) => {
+                const li = document.createElement('li');
+                const status = index === 0 ? ' (TOCANDO AGORA)' : '';
+                li.innerHTML = `
+                    <strong>${index + 1}.</strong> 
+                    ${video.title}
+                    <span style="font-size: 0.8em; color: #7f8c8d;">${status} - Por: ${video.added_by}</span>
+                `;
+                if (index === 0) {
+                    li.style.fontWeight = 'bold';
+                    li.style.color = '#3498db';
+                }
+                queueList.appendChild(li);
+            });
+        }
+        
+       
+
+        function updateStatsDisplay(score) {
+            if (!JOGADOR_ID) return;
+
+           
+            const myId = JOGADOR_ID;
+            const opponentId = myId === 'jogador1' ? 'jogador2' : 'jogador1';
+
+            const myScore = score[myId];
+            const opponentScore = score[opponentId];
+            
+          
+            const myTotal = myScore.vitorias + myScore.derrotas;
+            const myWinRate = myTotal > 0 ? ((myScore.vitorias / myTotal) * 100).toFixed(1) : 0;
+            
+            document.getElementById('my-wins').innerText = myScore.vitorias;
+            document.getElementById('my-losses').innerText = myScore.derrotas;
+            document.getElementById('my-winrate').innerText = `${myWinRate}%`;
+
+          
+            const opponentTotal = opponentScore.vitorias + opponentScore.derrotas;
+            const opponentWinRate = opponentTotal > 0 ? ((opponentScore.vitorias / opponentTotal) * 100).toFixed(1) : 0;
+
+            document.getElementById('opponent-wins').innerText = opponentScore.vitorias;
+            document.getElementById('opponent-losses').innerText = opponentScore.derrotas;
+            document.getElementById('opponent-winrate').innerText = `${opponentWinRate}%`;
+        }
+
+        
+
+
+        socket.on('queue_updated', function(data) {
+            updateQueueDisplay(data.queue);
+        });
+        
+        socket.on('play_next_video', function(data) {
+            const videoId = data.youtube_id;
+            const startTime = data.start_time || 0; 
+            
+            if (!player || !player.loadVideoById) {
+                initialVideoCommand = data;
+                console.log("Comando de vídeo recebido, mas player não pronto. Armazenando...");
+                return;
+            }
+            
+            executePlayback(videoId, startTime);
+        });
+        
+        socket.on('player_sync_command', function(data) {
+            if (!player || !player.getCurrentTime) return;
+            
+            isSyncing = true; 
+            
+            const targetTime = data.time;
+            const currentTime = player.getCurrentTime();
+            
+            if (data.state === 'pause') {
+                player.pauseVideo();
+            } else if (data.state === 'play') {
+                player.playVideo();
+            }
+            
+            if (Math.abs(currentTime - targetTime) > 2) {
+                player.seekTo(targetTime, true);
+                console.log(`[Sinc] Reposicionando de ${currentTime.toFixed(2)}s para ${targetTime.toFixed(2)}s.`);
+            }
+        });
+
+
+       
+
+        function sairDoJogo() {
+           
+            statusDisplay.innerText = 'Saindo do jogo...';
+            socket.emit('leave_room_request', { code: ROOM_CODE });
+            window.location.href = '/'; 
+        }
+        
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (message && JOGADOR_ID) {
+                socket.emit('send_message', { code: ROOM_CODE, jogador: JOGADOR_ID, message: message });
+                messageInput.value = '';
+            }
+        });
+
+        socket.on('receive_message', function(data) {
+            const p = document.createElement('p');
+            const isLocalPlayer = data.nome === SEU_NOME || data.nome.includes(`${SEU_NOME} (`);
+            let nameColor = isLocalPlayer ? '#3498db' : '#27ae60';
+            p.innerHTML = `<span style="font-weight: bold; color: ${nameColor};">[${data.nome}]</span>: ${data.message}`;
+            messagesDiv.appendChild(p);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+        
         socket.on('connect', function() {
-            socket.emit('join_room_request', { code: ROOM_CODE });
-            statusDisplay.innerText = 'Conectado. Aguardando atribuição de papel...';
+            socket.emit('join_room_request', { code: ROOM_CODE, nome: SEU_NOME });
         });
 
         socket.on('room_joined', function(data) {
             JOGADOR_ID = data.role;
-            const displayRole = JOGADOR_ID.replace('jogador', 'Jogador ');
-            roleDisplay.innerText = `Você é: ${displayRole}`;
+            document.getElementById('player-role').innerHTML = `<strong>Você é: ${data.nome}</strong> (${JOGADOR_ID.replace('jogador', 'Jogador ')})`;
             
-           
             if (JOGADOR_ID === 'jogador1') {
                 statusDisplay.innerHTML = '<strong>Você é o Jogador 1.</strong> <br> Compartilhe o link acima para um amigo entrar como Jogador 2!';
+            } else {
+                statusDisplay.innerHTML = 'Conectado. Aguardando o início do jogo...';
             }
         });
 
-       
         socket.on('start_game', function(data) {
+            const j1_nome = data.j1_nome;
+            const j2_nome = data.j2_nome;
+            NOME_OPONENTE = JOGADOR_ID === 'jogador1' ? j2_nome : j1_nome;
+            opponentDisplay.innerText = `Oponente: ${NOME_OPONENTE}`;
             statusDisplay.innerHTML = '<strong>JOGO INICIADO!</strong> <br> Faça sua jogada.';
-            toggleButtons(true);
+            toggleButtons(true); 
         });
 
-        
         socket.on('resultado', function(data) {
             let corResultado;
-            if (data.resultado.includes(JOGADOR_ID.replace('jogador', 'Jogador'))) {
+            if (data.resultado.includes(SEU_NOME) && !data.resultado.includes('Empate')) {
                 corResultado = '#27ae60'; 
             } else if (data.resultado.includes('Empate')) {
                 corResultado = '#f39c12'; 
             } else {
                 corResultado = '#c0392b'; 
             }
-            
             statusDisplay.innerHTML =
                 `<strong>Rodada Finalizada!</strong> <br><br>
-                 J1: ${data.jogador1} | J2: ${data.jogador2} <br><br>
+                 ${data.jogador1_nome}: ${data.j1_escolha} | ${data.jogador2_nome}: ${data.j2_escolha} <br><br>
                  <span style="font-size: 1.4em; color: ${corResultado}; font-weight: bold;">
-                    ${data.resultado}
+                     ${data.resultado}
                  </span> <br><br>
                  Faça sua próxima jogada.`;
             
+            if (data.score) {
+                updateStatsDisplay(data.score);
+            }
+
             toggleButtons(true); 
         });
 
-        
         socket.on('play_registered', function(data) {
-            if (data.jogador === JOGADOR_ID) {
+            if (data.jogador_id === JOGADOR_ID) {
                 statusDisplay.innerText = `Sua jogada foi registrada. Aguardando o outro jogador...`;
                 toggleButtons(false); 
             } else {
-                statusDisplay.innerText = `O outro jogador jogou! Aguardando o resultado...`;
+                statusDisplay.innerText = `O outro jogador (${data.nome}) jogou! Aguardando o resultado...`;
             }
         });
 
-        
+        socket.on('opponent_disconnected', function(data) {
+            if (JOGADOR_ID === 'jogador1') {
+                statusDisplay.innerHTML = `<strong>AVISO:</strong> ${data.message}`;
+                NOME_OPONENTE = data.opponent_name;
+                opponentDisplay.innerText = `Oponente: ${NOME_OPONENTE}`;
+                toggleButtons(false); 
+            }
+        });
+
+        socket.on('player_left', function(data) {
+            statusDisplay.innerText = `AVISO: ${data.message} Redirecionando para o lobby...`;
+            opponentDisplay.innerText = 'Oponente: Desconectado.';
+            toggleButtons(false);
+            setTimeout(() => { window.location.href = '/'; }, 5000); 
+        });
+
         socket.on('error', function(data) {
             statusDisplay.innerText = `ERRO: ${data.message} Redirecionando...`;
+            opponentDisplay.innerText = 'Oponente: Desconectado.';
             toggleButtons(false);
             setTimeout(() => { window.location.href = '/'; }, 3000);
         });
 
-        socket.on('player_left', function(data) {
-            statusDisplay.innerText = `AVISO: ${data.message} Retorne para a tela inicial para criar um novo lobby.`;
-            toggleButtons(false);
-            setTimeout(() => { window.location.href = '/'; }, 5000);
-        });
-
-        
         function enviarEscolha(escolha) {
             if (!JOGADOR_ID) {
-                alert('Aguarde a atribuição de papel pelo servidor.');
+                
+                statusDisplay.innerHTML = '<span style="color:#c0392b;">Aguarde a atribuição de papel pelo servidor (Conectando...).</span>';
                 return;
             }
-           
             socket.emit('escolha', { code: ROOM_CODE, jogador: JOGADOR_ID, escolha });
         }
     </script>

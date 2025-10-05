@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <title>Criar / Entrar no Lobby</title>
     <style>
+        
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background-color: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); width: 90%; max-width: 400px; text-align: center; }
+        .container { background-color: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); width: 90%; max-width: 450px; text-align: center; }
         h1 { color: #2c3e50; margin-bottom: 30px; font-size: 2em; }
         form { margin-bottom: 20px; }
         input[type="text"], button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; }
@@ -13,6 +14,42 @@
         button:hover { background-color: #27ae60; }
         .error { color: #e74c3c; font-weight: bold; margin-bottom: 15px; }
         .divider { border-top: 1px solid #eee; margin: 20px 0; }
+        input[name="nome"] { border-color: #3498db; }
+        .list-lobbies-button {
+            display: block; 
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            background-color: #f39c12; 
+            color: white;
+            text-decoration: none; 
+            font-size: 1em;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        .list-lobbies-button:hover {
+            background-color: #e67e22;
+        }
+       
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin: 10px 0;
+            padding: 5px;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+        }
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin: 0 10px 0 5px;
+            transform: scale(1.5); 
+        }
+        .checkbox-container label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -24,17 +61,32 @@
         {% endif %}
 
         <h2>Criar Novo Jogo</h2>
-        <form method="POST" action="/create">
+        <form method="POST" action="{{ url_for('create_lobby') }}">
+            <input type="text" name="nome" placeholder="Seu nome (opcional)" maxlength="20"> 
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="is_private" name="is_private">
+                <label for="is_private">Marcar como Lobby Privado (Não aparecerá em "Salas Abertas")</label>
+            </div>
+            
             <button type="submit">CRIAR LOBBY (Eu serei o Jogador 1)</button>
         </form>
 
         <div class="divider"></div>
 
-        <h2>Entrar em Jogo Existente</h2>
-        <form method="POST" action="/join">
+        <h2>Entrar em Jogo Existente (Código)</h2>
+        <form method="POST" action="{{ url_for('join_lobby') }}">
             <input type="text" name="code" placeholder="Insira o código do lobby (ex: ABCD)" maxlength="4" required>
-            <button type="submit" style="background-color: #3498db;">ENTRAR NO LOBBY (Eu serei o Jogador 2)</button>
+            <input type="text" name="nome" placeholder="Seu nome (opcional)" maxlength="20"> 
+            <button type="submit" style="background-color: #3498db;">ENTRAR NO LOBBY</button>
         </form>
+
+        <div class="divider"></div>
+
+        <a href="{{ url_for('list_lobbies_page') }}" class="list-lobbies-button">
+            VER SALAS ABERTAS
+        </a>
+
     </div>
 </body>
 </html>
