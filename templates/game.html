@@ -8,6 +8,7 @@
     
    
     <script src="https://www.youtube.com/iframe_api"></script> 
+    <script src="https://unpkg.com/dompurify@3.0.6/dist/purify.min.js"></script>
     
     <style>
         
@@ -450,10 +451,12 @@
                 message: `[ALERTA VÍDEO] ${errorMessage} Pulando para o próximo...` 
             });
 
-            document.getElementById('player').innerHTML = 
-                `<div style="color:white; padding: 20px;">
-                    ERRO: ${errorMessage}<br>Pulando para o próximo...
-                </div>`; 
+             const safeMessage = DOMPurify.sanitize(errorMessage);
+
+             document.getElementById('player').innerHTML = `
+                <div style="color:white; padding: 20px;">
+                    ERRO: ${safeMessage}<br>Pulando para o próximo...
+                </div>`;
 
             
             socket.emit('video_error', { code: ROOM_CODE });
@@ -466,7 +469,9 @@
                 player.loadVideoById(videoId, startTime); 
             } else {
                  const playerContainer = document.getElementById('player');
-                 playerContainer.innerHTML = '';
+                 while (playerContainer.firstChild) {
+                    playerContainer.removeChild(playerContainer.firstChild);
+                }
                  
                  player = new YT.Player('player', {
                     height: '200',
@@ -513,33 +518,49 @@
                 videoUrlInput.value = '';
             } else {
                 
-                statusDisplay.innerHTML = '<span style="color:#c0392b;">URL do YouTube inválida ou player não pronto.</span>';
+                statusDisplay.innerHTML = DOMPurify.sanitize('<span style="color:#c0392b;">URL do YouTube inválida ou player não pronto.</span>');
             }
         });
 
         function updateQueueDisplay(queue) {
+            
             queueList.innerHTML = '';
+
             if (queue.length === 0) {
-                queueList.innerHTML = '<li style="color: #7f8c8d; border-bottom: none;">Nenhum vídeo na fila.</li>';
-                document.getElementById('player').innerHTML = 'Aguardando vídeo...'; 
+                
+                queueList.innerHTML = DOMPurify.sanitize(
+                    '<li style="color: #7f8c8d; border-bottom: none;">Nenhum vídeo na fila.</li>'
+                );
+
+                document.getElementById('player').innerHTML = DOMPurify.sanitize('Aguardando vídeo...');
                 return;
             }
+
             
             queue.forEach((video, index) => {
                 const li = document.createElement('li');
                 const status = index === 0 ? ' (TOCANDO AGORA)' : '';
-                li.innerHTML = `
+
+                
+                const safeTitle = DOMPurify.sanitize(video.title);
+                const safeAddedBy = DOMPurify.sanitize(video.added_by);
+                const safeStatus = DOMPurify.sanitize(status);
+
+                li.innerHTML = DOMPurify.sanitize(`
                     <strong>${index + 1}.</strong> 
-                    ${video.title}
-                    <span style="font-size: 0.8em; color: #7f8c8d;">${status} - Por: ${video.added_by}</span>
-                `;
+                    ${safeTitle}
+                    <span style="font-size: 0.8em; color: #7f8c8d;">${safeStatus} - Por: ${safeAddedBy}</span>
+                `);
+
                 if (index === 0) {
                     li.style.fontWeight = 'bold';
                     li.style.color = '#3498db';
                 }
+
                 queueList.appendChild(li);
             });
         }
+
         
        
 
@@ -633,7 +654,10 @@
             const p = document.createElement('p');
             const isLocalPlayer = data.nome === SEU_NOME || data.nome.includes(`${SEU_NOME} (`);
             let nameColor = isLocalPlayer ? '#3498db' : '#27ae60';
-            p.innerHTML = `<span style="font-weight: bold; color: ${nameColor};">[${data.nome}]</span>: ${data.message}`;
+            const safeName = DOMPurify.sanitize(data.nome);
+            const safeMessage = DOMPurify.sanitize(data.message);
+
+            p.innerHTML = DOMPurify.sanitize(`<span style="font-weight: bold; color: ${nameColor};">[${safeName}]</span>: ${safeMessage}`);
             messagesDiv.appendChild(p);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
@@ -644,12 +668,13 @@
 
         socket.on('room_joined', function(data) {
             JOGADOR_ID = data.role;
-            document.getElementById('player-role').innerHTML = `<strong>Você é: ${data.nome}</strong> (${JOGADOR_ID.replace('jogador', 'Jogador ')})`;
+            const safeName = DOMPurify.sanitize(data.nome);
+            document.getElementById('player-role').innerHTML = DOMPurify.sanitize(`<strong>Você é: ${safeName}</strong> (${JOGADOR_ID.replace('jogador', 'Jogador ')})`);
             
             if (JOGADOR_ID === 'jogador1') {
-                statusDisplay.innerHTML = '<strong>Você é o Jogador 1.</strong> <br> Compartilhe o link acima para um amigo entrar como Jogador 2!';
+                statusDisplay.innerHTML = DOMPurify.sanitize('<strong>Você é o Jogador 1.</strong> <br> Compartilhe o link acima para um amigo entrar como Jogador 2!');
             } else {
-                statusDisplay.innerHTML = 'Conectado. Aguardando o início do jogo...';
+                statusDisplay.innerHTML = DOMPurify.sanitize('Conectado. Aguardando o início do jogo...');
             }
         });
 
@@ -658,7 +683,7 @@
             const j2_nome = data.j2_nome;
             NOME_OPONENTE = JOGADOR_ID === 'jogador1' ? j2_nome : j1_nome;
             opponentDisplay.innerText = `Oponente: ${NOME_OPONENTE}`;
-            statusDisplay.innerHTML = '<strong>JOGO INICIADO!</strong> <br> Faça sua jogada.';
+            statusDisplay.innerHTML = DOMPurify.sanitize('<strong>JOGO INICIADO!</strong> <br> Faça sua jogada.');
             toggleButtons(true); 
         });
 
@@ -671,13 +696,21 @@
             } else {
                 corResultado = '#c0392b'; 
             }
-            statusDisplay.innerHTML =
+
+            const safeJ1Nome = DOMPurify.sanitize(data.jogador1_nome);
+            const safeJ1Escolha = DOMPurify.sanitize(data.j1_escolha);
+            const safeJ2Nome = DOMPurify.sanitize(data.jogador2_nome);
+            const safeJ2Escolha = DOMPurify.sanitize(data.j2_escolha);
+            const safeResultado = DOMPurify.sanitize(data.resultado);
+
+
+            statusDisplay.innerHTML = DOMPurify.sanitize( 
                 `<strong>Rodada Finalizada!</strong> <br><br>
-                 ${data.jogador1_nome}: ${data.j1_escolha} | ${data.jogador2_nome}: ${data.j2_escolha} <br><br>
+                 ${safeJ1Nome}: ${safeJ1Escolha} | ${safeJ2Nome}: ${safeJ2Escolha} <br><br>
                  <span style="font-size: 1.4em; color: ${corResultado}; font-weight: bold;">
-                     ${data.resultado}
+                     ${safeResultado}
                  </span> <br><br>
-                 Faça sua próxima jogada.`;
+                 Faça sua próxima jogada.`);
             
             if (data.score) {
                 updateStatsDisplay(data.score);
@@ -697,7 +730,9 @@
 
         socket.on('opponent_disconnected', function(data) {
             if (JOGADOR_ID === 'jogador1') {
-                statusDisplay.innerHTML = `<strong>AVISO:</strong> ${data.message}`;
+                const safeMessage = DOMPurify.sanitize(data.message);
+
+                statusDisplay.innerHTML = DOMPurify.sanitize(`<strong>AVISO:</strong> ${safeMessage}`);
                 NOME_OPONENTE = data.opponent_name;
                 opponentDisplay.innerText = `Oponente: ${NOME_OPONENTE}`;
                 toggleButtons(false); 
@@ -721,7 +756,7 @@
         function enviarEscolha(escolha) {
             if (!JOGADOR_ID) {
                 
-                statusDisplay.innerHTML = '<span style="color:#c0392b;">Aguarde a atribuição de papel pelo servidor (Conectando...).</span>';
+                statusDisplay.innerHTML = DOMPurify.sanitize('<span style="color:#c0392b;">Aguarde a atribuição de papel pelo servidor (Conectando...).</span>');
                 return;
             }
             socket.emit('escolha', { code: ROOM_CODE, jogador: JOGADOR_ID, escolha });
